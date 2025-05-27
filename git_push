@@ -4,5 +4,5 @@
 set +x
 
 git add .
-git commit -a -m "* init"
+git commit -a -m "+ workspace"
 git push origin main

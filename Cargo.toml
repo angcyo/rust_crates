@@ -1,0 +1,17 @@
+[workspace]
+edition = "2024"
+resolver = "3"
+members = [
+    "rc_basis",
+    "rc_command",
+    "rc_image",
+    "rc_log",
+]
+
+[profile.release]
+#https://github.com/johnthagen/min-sized-rust
+strip = true  # Automatically strip symbols from the binary. 4~mb
+opt-level = "z"  # Optimize for size.
+lto = true  # Perform link-time optimizations.
+codegen-units = 1  # Compile the whole crate at once.
+panic = "unwind"  # Abort on panic. 20~kb # unwind

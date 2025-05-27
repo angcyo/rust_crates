@@ -1,0 +1,33 @@
+[package]
+name = "rc_basis"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+# 错误处理
+# https://crates.io/crates/anyhow
+anyhow = "1.0.98"
+
+# 时间处理
+# https://crates.io/crates/chrono
+chrono = "0.4.41"
+
+# base64
+# https://crates.io/crates/base64
+base64 = "0.22.1"
+
+# md5
+# https://crates.io/crates/md5
+md5 = "0.7.0"
+
+# uuid
+# https://crates.io/crates/uuid
+uuid = { version = "1.17.0", features = ["v4"] }
+
+# 随机数
+# https://crates.io/crates/rand
+rand = "0.9.1"
+
+# 字节处理
+# https://crates.io/crates/bytes
+bytes = "1.10.1"
