@@ -22,3 +22,19 @@ where
     let mut rng = rand::rng();
     rng.random_range(range)
 }
+
+/// 求2个f32的最小值
+pub fn min_f32(a: f32, b: f32) -> f32 {
+    if a < b {
+        return a;
+    }
+    b
+}
+
+/// 求2个f32的最大值
+pub fn max_f32(a: f32, b: f32) -> f32 {
+    if a > b {
+        return a;
+    }
+    b
+}

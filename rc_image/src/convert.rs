@@ -1,5 +1,6 @@
 use crate::read::{read_image_bytes, read_image_file};
-use image::{DynamicImage, ImageError};
+use image::{DynamicImage, EncodableLayout, ImageBuffer, ImageError, Pixel};
+use std::ops::Deref;
 
 ///
 /// @author <a href="mailto: angcyo@126.com">angcyo</a>
@@ -35,6 +36,21 @@ pub fn image_to_base64(img: &DynamicImage) -> rc_basis::anyhow::Result<String> {
     //let mut buffer = Vec::new();
     let mut buffer = std::io::Cursor::new(Vec::new());
     img.write_to(&mut buffer, image::ImageFormat::Png)?;
+
+    // 编码为 Base64
+    let base64_string = rc_basis::bytes::base64_encode(&buffer.into_inner());
+    Ok(base64_string)
+}
+pub fn image_buffer_to_base64<P: Pixel + image::PixelWithColorType, Container>(
+    img_buffer: &ImageBuffer<P, Container>,
+) -> rc_basis::anyhow::Result<String>
+where
+    P: Pixel,
+    [P::Subpixel]: EncodableLayout,
+    Container: Deref<Target = [P::Subpixel]>,
+{
+    let mut buffer = std::io::Cursor::new(Vec::new());
+    img_buffer.write_to(&mut buffer, image::ImageFormat::Png)?;
 
     // 编码为 Base64
     let base64_string = rc_basis::bytes::base64_encode(&buffer.into_inner());

@@ -3,6 +3,7 @@ pub use imageproc;
 
 pub mod convert;
 pub mod read;
+pub mod write;
 
 ///
 /// @author <a href="mailto:angcyo@126.com">angcyo</a>
