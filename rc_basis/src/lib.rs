@@ -3,6 +3,7 @@ pub mod colors;
 pub mod files;
 pub mod macros;
 pub mod num;
+pub mod traits;
 
 ///
 /// @author <a href="mailto:angcyo@126.com">angcyo</a>

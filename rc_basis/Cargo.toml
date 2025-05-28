@@ -34,3 +34,7 @@ rand = "0.9.1"
 # 字节处理
 # https://crates.io/crates/bytes
 bytes = "1.10.1"
+
+# 正则
+# https://crates.io/crates/regex
+regex = "1.11.1"
