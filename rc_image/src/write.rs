@@ -1,4 +1,5 @@
-use image::{ImageBuffer, Rgba};
+use image::{DynamicImage, ImageBuffer, Rgba};
+use rc_basis::anyhow;
 use rc_basis::colors::RgbaColor;
 
 ///
@@ -18,4 +19,29 @@ pub fn create_image<Color: RgbaColor>(
         height,
         Rgba([color.r(), color.g(), color.b(), color.a()]),
     )
+}
+
+/// 将图片保存到文件
+pub fn save_image(
+    image: &DynamicImage,
+    file_path: &str,
+    format: Option<image::ImageFormat>,
+) -> anyhow::Result<()> {
+    match format {
+        Some(format) => Ok(image.save_with_format(file_path, format)?),
+        None => Ok(image.save(file_path)?),
+    }
+    /*.map_err(|e| format!("保存图片失败: {}", e))*/
+}
+
+pub fn save_image_buffer(
+    image: &ImageBuffer<Rgba<u8>, Vec<u8>>,
+    file_path: &str,
+    format: Option<image::ImageFormat>,
+) -> anyhow::Result<()> {
+    match format {
+        Some(format) => Ok(image.save_with_format(file_path, format)?),
+        None => Ok(image.save(file_path)?),
+    }
+    /*.map_err(|e| format!("保存图片失败: {}", e))*/
 }
