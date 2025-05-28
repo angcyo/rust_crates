@@ -3,7 +3,7 @@
 /// @date 2025/05/27
 ///
 
-/// 使用 macro_rules! 的 声明宏（declarative macro），和三种 过程宏（procedural macro）：
+/// 使用 `macro_rules!` 的 声明宏（declarative macro），和三种 过程宏（procedural macro）：
 /// - 自定义 #[derive] 宏，用于在结构体和枚举上通过添加 derive 属性生成代码
 /// - 类属性宏，定义可用于任意项的自定义属性
 /// - 类函数宏，看起来像函数，但操作的是作为其参数传递的 token
