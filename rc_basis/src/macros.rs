@@ -47,8 +47,26 @@ macro_rules! version {
 
 //--
 
-#[cfg(not(feature = "debug"))]
+/// 当前宏, 只在开启了特征 feature = "debug" 时, 才会编译
 #[macro_export]
+#[cfg(feature = "debug")]
+macro_rules! debug {
+    ($($arg:tt)*) => ({
+        use std::fmt::Write as _;
+        let hint = anstyle::Style::new().dimmed();
+
+        let module_path = module_path!();
+        let body = format!($($arg)*);
+        let mut styled = $crate::builder::StyledStr::new();
+        let _ = write!(styled, "{hint}[{module_path:>28}]{body}{hint:#}\n");
+        let color = $crate::output::fmt::Colorizer::new($crate::output::fmt::Stream::Stderr, $crate::ColorChoice::Auto).with_content(styled);
+        let _ = color.print();
+    })
+}
+
+/// 当前宏, 只在未开启了特征 feature = "debug" 时, 才会编译
+#[macro_export]
+#[cfg(not(feature = "debug"))]
 macro_rules! debug {
     ($($arg:tt)*) => {};
 }

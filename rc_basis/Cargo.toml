@@ -5,6 +5,7 @@ edition = "2024"
 
 [features]
 debug = []
+#debug = ["dep:backtrace"] # 指定特征下, 需要的依赖
 
 [dependencies]
 # 错误处理
