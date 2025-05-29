@@ -41,3 +41,24 @@ pub fn read_file_bytes(file_path: &str) -> anyhow::Result<Vec<u8>> {
     file.read_to_end(&mut buffer)?;
     Ok(buffer)
 }
+
+/// 调用系统程序, 打开文件
+fn open_file(path: &String) {
+    #[cfg(target_os = "windows")]
+    {
+        // Windows使用 start 命令
+        std::process::Command::new("cmd")
+            .args(&["/C", "start", "", path])
+            .spawn()
+            .unwrap();
+    }
+
+    #[cfg(target_os = "macos")]
+    {
+        // macOS 使用 open 命令
+        std::process::Command::new("open")
+            .arg(path)
+            .spawn()
+            .unwrap();
+    }
+}
