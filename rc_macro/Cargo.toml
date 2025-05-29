@@ -1,0 +1,15 @@
+[package]
+name = "rc_macro"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+# Parser for Rust source code
+# https://crates.io/crates/syn
+syn = "2.0.101"
+# Quasi-quoting macro quote!(...)
+# https://crates.io/crates/quote
+quote = "1.0.40"
