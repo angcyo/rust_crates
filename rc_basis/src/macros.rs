@@ -19,6 +19,14 @@ macro_rules! ptl {
     }};
 }
 
+/// 定义一个宏, 打印变量的内存地址
+#[macro_export]
+macro_rules! pta {
+    ($($name:ident),+ $(,)?) => {
+        $(println!("{:p}  {:<10}{:>10}", &$name, stringify!($name), $name);)*
+    }
+}
+
 /// 定义一个宏, 用来获取当前当前调用的文件, 文件行/列号
 /// `xxx/src/main.rs:25:31`
 #[macro_export]
@@ -36,6 +44,8 @@ macro_rules! version {
         env!("CARGO_PKG_VERSION")
     };
 }
+
+//--
 
 #[cfg(not(feature = "debug"))]
 #[macro_export]
@@ -67,6 +77,8 @@ macro_rules! some {
     };
 }
 
+//--
+
 /// 定义一个宏, 用来成功退出程序
 /// 0: 表示程序成功完成，按照约定，这是一个“正常”退出代码。
 #[macro_export]
@@ -85,4 +97,55 @@ macro_rules! exit_failure {
     () => {
         std::process::exit(1)
     };
+}
+
+//--
+
+/// 这是一个声明宏，它会打印各种数据结构本身的大小，在 Option 中的大小，以及在 Result 中的大小
+#[macro_export]
+macro_rules! show_size {
+    (header) => {
+        println!(
+            "{:<24} {:>4} {} {}",
+            "Type", "T", "Option<T>", "Result<T, io::Error>"
+        );
+        println!("{}", "-".repeat(64));
+    };
+    ($t:ty) => {
+        println!(
+            "{:<24} {:4} {:8} {:12}",
+            stringify!($t),
+            size_of::<$t>(),
+            size_of::<Option<$t>>(),
+            size_of::<Result<$t, std::io::Error>>(),
+        )
+    };
+}
+
+#[cfg(test)]
+mod tests {
+    use std::collections::HashMap;
+    #[test]
+    fn test_macro_pta() {
+        let a = 1;
+        let b = true;
+        let c = "2";
+        pta!(a);
+        pta!(a, b, c);
+        //println!("{:p}", &a);
+    }
+
+    #[test]
+    fn test_macro_show_size() {
+        show_size!(header);
+        show_size!(u8);
+        show_size!(f64);
+        show_size!(&u8);
+        show_size!(Box<u8>);
+        show_size!(&[u8]);
+        show_size!(String);
+        show_size!(Vec<u8>);
+        show_size!(HashMap<String, String>);
+        show_size!(Option<u8>);
+    }
 }
