@@ -157,12 +157,18 @@ pub fn print_token_stream(input: TokenStream) -> TokenStream {
 /// ]
 ///
 #[proc_macro_derive(DerivePrintToken)]
-pub fn derive_print_token_stream(input: TokenStream) -> TokenStream {
-    println!("derive_print_token_stream↓\n{:#?}", input); //这段代码只会在`Build`的时候输出信息，不会在`Run`的时候输出信息.
-    let generated = quote! {
-        //println!("<-请在`Build`窗口查看日志输出.(derive_print_token_stream!)->");
-    };
-    generated.into()
+pub fn print_derive_token_stream(input: TokenStream) -> TokenStream {
+    println!("print_derive_token_stream↓\n{:#?}", input); //这段代码只会在`Build`的时候输出信息，不会在`Run`的时候输出信息.
+    TokenStream::new()
+}
+
+/// 属性宏
+#[proc_macro_attribute]
+pub fn print_attribute_token_stream(args: TokenStream, input: TokenStream) -> TokenStream {
+    println!("print_attribute_token_stream↓");
+    println!("args->{:#?}", args);
+    println!("input->{:#?}", input);
+    TokenStream::new()
 }
 
 #[cfg(test)]
