@@ -13,3 +13,6 @@ syn = "2.0.101"
 # Quasi-quoting macro quote!(...)
 # https://crates.io/crates/quote
 quote = "1.0.40"
+# Rust syntax extensions
+# https://crates.io/crates/proc-macro2
+proc-macro2 = "1.0.27"
