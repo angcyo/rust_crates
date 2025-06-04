@@ -3,6 +3,7 @@ pub mod colors;
 pub mod files;
 pub mod macros;
 pub mod num;
+pub mod strings;
 pub mod traits;
 
 ///
