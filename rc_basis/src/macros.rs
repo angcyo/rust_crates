@@ -45,6 +45,14 @@ macro_rules! version {
     };
 }
 
+/// 获取当前线程的名称
+#[macro_export]
+macro_rules! thread_name {
+    () => {
+        std::thread::current().name().unwrap_or("");
+    };
+}
+
 //--
 
 /// 当前宏, 只在开启了特征 feature = "debug" 时, 才会编译
