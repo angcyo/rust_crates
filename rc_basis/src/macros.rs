@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 ///
 /// @author <a href="mailto: angcyo@126.com">angcyo</a> \
 /// @date 2025/05/27
@@ -50,6 +52,27 @@ macro_rules! version {
 macro_rules! thread_name {
     () => {
         std::thread::current().name().unwrap_or("");
+    };
+}
+
+/// "127.0.0.1:8080"
+/// "127.0.0.1"
+pub fn ipv4_from_str(str: &str) -> std::net::SocketAddr {
+    let parts = str.split(":").collect::<Vec<_>>();
+    let ip = *parts.get(0).unwrap_or(&"127.0.0.1");
+    let port = parts.get(1).unwrap_or(&"80").parse::<u16>().unwrap();
+
+    //SocketAddr::V4(SocketAddrV4::new(Ipv4Addr::new(127, 0, 0, 1), id));
+    let ipv4_addr = std::net::Ipv4Addr::from_str(ip).unwrap();
+    //std::net::SocketAddr::new(std::net::IpAddr::V4(ipv4_addr), port)
+    std::net::SocketAddr::V4(std::net::SocketAddrV4::new(ipv4_addr, port))
+}
+
+/// 定义一个宏, 用来获取一个IpV4的地址
+#[macro_export]
+macro_rules! ipv4 {
+    ($val:expr) => {
+        rc_basis::macros::ipv4_from_str($val)
     };
 }
 

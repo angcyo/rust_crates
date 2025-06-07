@@ -1,0 +1,19 @@
+[package]
+name = "rc_http"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+rc_basis = { path = "../rc_basis" }
+
+# An event-driven, non-blocking I/O platform for writing asynchronous I/O backed applications.
+# https://crates.io/crates/tokio
+tokio = "1.45.1"
+
+# higher level HTTP client library
+# https://crates.io/crates/reqwest
+reqwest = "0.12.19"
+
+# Web framework that focuses on ergonomics and modularity
+# https://crates.io/crates/axum
+axum = "0.8.4"

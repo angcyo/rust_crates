@@ -3,7 +3,7 @@ edition = "2024"
 resolver = "3"
 members = [
     "rc_basis",
-    "rc_command",
+    "rc_command", "rc_http",
     "rc_image",
     "rc_log", "rc_macro",
 ]
