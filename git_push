@@ -4,5 +4,5 @@
 set +x
 
 git add .
-git commit -a -m "+ http / web"
+git commit -a -m "+ test regex"
 git push origin main

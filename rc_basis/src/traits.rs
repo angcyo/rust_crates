@@ -61,4 +61,32 @@ mod tests {
         assert_eq!(f64::parse("123.45abcd"), Ok(123.45));
         assert_eq!(f64::parse("abcd"), Ok(0f64));
     }
+
+    /// 正则字符串替换
+    #[test]
+    fn test_regex_replace() {
+        let origin = "G1 X70.482 Y59.953 F7800";
+        let regex = r"G1 (X([-+]?\d*\.?\d+)+ Y([-+]?\d*\.?\d+)+ F([-+]?\d*\.?\d+)+)";
+        let re = regex::Regex::new(regex).unwrap();
+        let replaced = re.replace_all(origin, "G0 $1");
+        println!("{}", replaced);//G0 X70.482 Y59.953 F7800
+
+        let replaced = re.replace_all(origin, "$0");
+        println!("{}", replaced);//G1 X70.482 Y59.953 F7800
+
+        let replaced = re.replace_all(origin, "$2");
+        println!("{}", replaced);//70.482
+
+        let replaced = re.replace_all(origin, "$3");
+        println!("{}", replaced);//59.953
+
+        let replaced = re.replace_all(origin, "$4");
+        println!("{}", replaced);//7800
+        
+        let replaced = re.replace_all(origin, "$5");
+        println!("{}", replaced);//
+
+        let replaced = re.replace_all(origin, "$6");
+        println!("{}", replaced);//
+    }
 }

@@ -1,5 +1,5 @@
 use std::fs::File;
-use std::io::{Read, Write};
+use std::io::{BufRead, Read, Write};
 
 ///
 /// @author <a href="mailto: angcyo@126.com">angcyo</a>
@@ -54,6 +54,37 @@ pub fn read_file_bytes(file_path: &str) -> anyhow::Result<Vec<u8>> {
     let mut buffer = Vec::new();
     file.read_to_end(&mut buffer)?;
     Ok(buffer)
+}
+
+/// 从文件中读取一行一行的数据
+pub fn read_file_lines(file_path: &str) -> anyhow::Result<Vec<String>> {
+    let file = File::open(file_path)?;
+    let reader = std::io::BufReader::new(file);
+    let lines = reader.lines();
+    Ok(lines.map(|line| line.unwrap()).collect())
+}
+
+/// [f] 读取文件, 每行调用[f], 返回false可以中断读取
+/// 返回读取到的行数
+pub fn read_file_buffer_lines<F>(file_path: &str, f: F) -> anyhow::Result<i64>
+where
+    F: Fn(String) -> bool,
+{
+    let file = File::open(file_path)?;
+    let reader = std::io::BufReader::new(file);
+    //reader.read();
+    let mut count = 0;
+    for line in reader.lines() {
+        if line.is_err() {
+            break;
+        }
+
+        if !f(line?) {
+            break;
+        }
+        count += 1;
+    }
+    Ok(count)
 }
 
 /// 调用系统程序, 打开文件
