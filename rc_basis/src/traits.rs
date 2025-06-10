@@ -69,24 +69,39 @@ mod tests {
         let regex = r"G1 (X([-+]?\d*\.?\d+)+ Y([-+]?\d*\.?\d+)+ F([-+]?\d*\.?\d+)+)";
         let re = regex::Regex::new(regex).unwrap();
         let replaced = re.replace_all(origin, "G0 $1");
-        println!("{}", replaced);//G0 X70.482 Y59.953 F7800
+        println!("{}", replaced); //G0 X70.482 Y59.953 F7800
 
         let replaced = re.replace_all(origin, "$0");
-        println!("{}", replaced);//G1 X70.482 Y59.953 F7800
+        println!("{}", replaced); //G1 X70.482 Y59.953 F7800
 
         let replaced = re.replace_all(origin, "$2");
-        println!("{}", replaced);//70.482
+        println!("{}", replaced); //70.482
 
         let replaced = re.replace_all(origin, "$3");
-        println!("{}", replaced);//59.953
+        println!("{}", replaced); //59.953
 
         let replaced = re.replace_all(origin, "$4");
-        println!("{}", replaced);//7800
-        
+        println!("{}", replaced); //7800
+
         let replaced = re.replace_all(origin, "$5");
-        println!("{}", replaced);//
+        println!("{}", replaced); //
 
         let replaced = re.replace_all(origin, "$6");
-        println!("{}", replaced.to_string());//
+        println!("{}", replaced.to_string()); //
+    }
+
+    #[test]
+    fn test_regex_match() {
+        // let origin = r"G1 E0 F2400";
+        let origin = r"G1 E-2 F2400";
+        let regex = r"G1 (E([-+]?\d*\.?\d+)+)\s?\S*";
+        let re = regex::Regex::new(regex).unwrap();
+        let _match = re.is_match(origin);
+        println!("{}", _match);
+
+        if _match {
+            let replaced = crate::strings::regex_replace_string(origin, regex, "");
+            println!("{}->{}", origin, replaced);
+        }
     }
 }
