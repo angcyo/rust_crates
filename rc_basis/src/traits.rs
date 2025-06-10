@@ -87,6 +87,6 @@ mod tests {
         println!("{}", replaced);//
 
         let replaced = re.replace_all(origin, "$6");
-        println!("{}", replaced);//
+        println!("{}", replaced.to_string());//
     }
 }
