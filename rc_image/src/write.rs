@@ -22,16 +22,30 @@ pub fn create_image<Color: RgbaColor>(
 }
 
 /// 将图片保存到文件
+/// [format] 如果不指定格式, 会按照文件后缀, 保存对应的像素格式, 如果格式不匹配会报错.
+/// [save_image]
+/// [write_image_file]
 pub fn save_image(
     image: &DynamicImage,
     file_path: &str,
     format: Option<image::ImageFormat>,
 ) -> anyhow::Result<()> {
+    rc_basis::files::ensure_parent_dir_exist(file_path);
     match format {
         Some(format) => Ok(image.save_with_format(file_path, format)?),
         None => Ok(image.save(file_path)?),
     }
     /*.map_err(|e| format!("保存图片失败: {}", e))*/
+}
+
+/// [save_image]
+/// [write_image_file]
+pub fn write_image_file(
+    image: &DynamicImage,
+    file_path: &str,
+    format: Option<image::ImageFormat>,
+) -> anyhow::Result<()> {
+    save_image(image, file_path, format)
 }
 
 pub fn save_image_buffer(

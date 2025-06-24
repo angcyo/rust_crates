@@ -76,6 +76,14 @@ macro_rules! ipv4 {
     };
 }
 
+/// 定义一个宏, 打印当前目录
+#[macro_export]
+macro_rules! ptl_current_dir {
+    () => {
+        rc_basis::ptl!("{}", rc_basis::get_current_dir());
+    }
+}
+
 //--
 
 /// 当前宏, 只在开启了特征 feature = "debug" 时, 才会编译

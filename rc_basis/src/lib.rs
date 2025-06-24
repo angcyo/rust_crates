@@ -36,6 +36,16 @@ pub fn now_date_time() -> String {
     Utc::now().to_string()
 }
 
+/// 统计计算耗时统计
+pub fn wrap_time_cost<F>(tag: &str, f: F)
+where
+    F: FnOnce() -> (),
+{
+    let start = std::time::Instant::now();
+    f();
+    println!("[{tag}]耗时: {}ms", start.elapsed().as_millis());
+}
+
 //--
 
 #[cfg(test)]

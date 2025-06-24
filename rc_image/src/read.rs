@@ -9,6 +9,7 @@ use std::ops::Deref;
 ///
 
 /// 从文件中读取图片数据
+/// 会解析文件后缀, 识别对应的像素格式, 如果格式不匹配会报错.
 pub fn read_image_file(image_file_path: &str) -> Result<DynamicImage, ImageError> {
     ImageReader::open(image_file_path)?.decode()
 }
