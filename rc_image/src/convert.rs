@@ -98,3 +98,22 @@ pub fn base64_to_image(base64_data: &str) -> rc_basis::anyhow::Result<DynamicIma
     let bytes = rc_basis::bytes::base64_decode(base64_data)?;
     Ok(read_image_bytes(bytes.as_slice())?)
 }
+
+/// rgba像素转换成png图片字节数据
+/// [read_image_bytes]
+/// [image::load_from_memory]
+pub fn rgba_to_png_bytes(
+    rgba: &Vec<u8>,
+    width: u32,
+    height: u32,
+    format: Option<image::ImageFormat>,
+) -> rc_basis::anyhow::Result<Vec<u8>> {
+    let image = ImageBuffer::<image::Rgba<u8>, _>::from_raw(width, height, rgba.clone()).unwrap();
+    let mut buffer = std::io::Cursor::new(Vec::new());
+    image.write_to(
+        &mut buffer,
+        format.unwrap_or_else(|| image::ImageFormat::Png),
+    )?;
+    //Ok(read_image_bytes(&buffer.into_inner())?)
+    Ok(buffer.into_inner())
+}
