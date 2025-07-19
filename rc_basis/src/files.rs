@@ -38,6 +38,11 @@ pub fn save_string_to_file(file_path: &str, content: &str) -> anyhow::Result<Str
     save_bytes_to_file(file_path, content.as_bytes())
 }
 
+/// 读取文件返回字符串
+pub fn read_file_to_string(file_path: &str) -> anyhow::Result<String> {
+    Ok(std::fs::read_to_string(file_path)?)
+}
+
 /// 保存字节数据到文件
 ///
 /// @return 保存后的文件路径
