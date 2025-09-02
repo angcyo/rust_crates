@@ -5,7 +5,7 @@ members = [
     "rc_basis",
     "rc_command", "rc_http",
     "rc_image",
-    "rc_log", "rc_macro",
+    "rc_log", "rc_lyon", "rc_macro",
 ]
 
 [profile.release]
