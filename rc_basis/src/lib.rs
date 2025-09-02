@@ -4,6 +4,7 @@ pub mod files;
 pub mod macros;
 pub mod num;
 pub mod strings;
+pub mod test;
 pub mod traits;
 
 ///

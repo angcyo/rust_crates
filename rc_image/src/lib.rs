@@ -2,6 +2,7 @@ pub use image;
 pub use imageproc;
 
 pub mod convert;
+pub mod matrix;
 pub mod read;
 pub mod write;
 
@@ -12,7 +13,12 @@ pub mod write;
 
 #[cfg(test)]
 mod tests {
+    use crate::convert::transform_image_full;
+    use crate::matrix::{deg_to_rad, rotate_matrix, scale_matrix};
+    use image::DynamicImage;
     use imageproc::drawing::Canvas;
+    use rc_basis::files::open_file_with_sys;
+    use rc_basis::test::get_test_output_file_path;
 
     #[test]
     fn it_works() {}
@@ -66,5 +72,22 @@ mod tests {
             /*crate::write::write_image_file(&image, "../tests/.output/test_lanczos3.png", None)
             .unwrap();*/
         });
+    }
+
+    /// 测试图片变换矩阵
+    #[test]
+    fn test_image_transform() {
+        let image = crate::read::read_image_file("../tests/test.png").unwrap();
+        //创建一个旋转矩阵Matrix3
+        let rotate_matrix = rotate_matrix(deg_to_rad(45.0));
+        //创建一个缩放矩阵Matrix3
+        let scale_matrix = scale_matrix(0.5, 1.5);
+        let new_image = transform_image_full(&image, &(scale_matrix * rotate_matrix));
+        //let new_image = DynamicImage::ImageRgba8(new_image);
+
+        let output = get_test_output_file_path(format!("{}.png", "test_transform").as_str());
+        new_image.save(output.as_str()).unwrap();
+
+        open_file_with_sys(&output);
     }
 }

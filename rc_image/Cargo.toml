@@ -12,3 +12,7 @@ image = "0.25.6"
 # 图片处理
 # https://crates.io/crates/imageproc
 imageproc = "0.25.0"
+
+# 线性代数库, 透视变换
+# https://crates.io/crates/nalgebra
+nalgebra = "0.34.0"
