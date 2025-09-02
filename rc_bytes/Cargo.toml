@@ -1,0 +1,12 @@
+[package]
+name = "rc_bytes"
+version = "0.1.0"
+edition = "2024"
+authors = ["angcyo@126.com"]
+license = "MIT"
+repository = "https://github.com/angcyo/rust_crates"
+description = "Rust bytes reader writer"
+readme = "README.md"
+keywords = ["bytes"]
+
+[dependencies]
