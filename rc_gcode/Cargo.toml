@@ -12,3 +12,9 @@ keywords = ["gcode"]
 [dependencies]
 # https://crates.io/crates/lyon_path/
 lyon_path = "1.0.7"
+# https://crates.io/crates/lyon_algorithms
+lyon_algorithms = "1.0.5"
+
+# 只在测试时使用的依赖
+[dev-dependencies]
+rc_basis = { path = "../rc_basis" }
