@@ -5,6 +5,7 @@ members = [
     "rc_basis",
     "rc_bytes",
     "rc_command",
+    "rc_gcode",
     "rc_http",
     "rc_image",
     "rc_log",
