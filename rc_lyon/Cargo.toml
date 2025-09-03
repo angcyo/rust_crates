@@ -2,20 +2,28 @@
 name = "rc_lyon"
 version = "0.1.0"
 edition = "2024"
+authors = ["angcyo@126.com"]
+license = "MIT"
+repository = "https://github.com/angcyo/rust_crates"
+description = "2D Path"
+readme = "README.md"
+keywords = ["path"]
 
 [dependencies]
-rc_basis = { path = "../rc_basis" }
-
 # 2D Graphics rendering on the GPU using tessellation.
 # https://crates.io/crates/lyon
 lyon = "1.0.1"
 # 2D quadratic and cubic bézier arcs and line segment math on top of euclid.
 # https://crates.io/crates/lyon_geom/
-lyon_geom = "1.0.6"
+#lyon_geom = "1.0.6"
 # Types and utilities to store, build and iterate over 2D paths."
 # https://crates.io/crates/lyon_path/
 lyon_path = "1.0.7"
 # 2D Path manipulation/transformation algorithms.
 # https://crates.io/crates/lyon_algorithms
 lyon_algorithms = "1.0.5"
-lyon_svg = "0.17.2"
+#lyon_svg = "0.17.2"
+
+# https://crates.io/crates/svgtypes
+# 解析svg path
+svgtypes = "0.15.3"

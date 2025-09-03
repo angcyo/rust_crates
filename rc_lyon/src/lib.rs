@@ -13,6 +13,7 @@ mod tests {
     use lyon_algorithms::walk::{walk_along_path, RegularPattern, WalkerEvent};
     use lyon_path::math::{point, Point};
     use lyon_path::{Path, Winding};
+    use svgtypes::PathParser;
 
     fn build_path() -> Path {
         // Build a simple path.
@@ -217,5 +218,48 @@ mod tests {
         //The contour is: [(0.0, 0.0), (0.6, 0.8), (1.2, 1.6), (1.8000001, 2.4), (2.4, 3.2), (3.0, 4.0), (3.6000001, 3.2), (4.2000003, 2.4), (4.8, 1.5999999), (5.4, 0.79999995), (6.0, 0.0), (5.0, 0.0), (3.9999998, 0.0), (3.0, 0.0), (1.9999999, 0.0), (0.99999976, 0.0), (0.0, 0.0)].
         println!("The contour is: {:?}.", contour);
         println!("The gcode is: \n{:}.", gcode);
+    }
+
+    #[test]
+    fn test_path_iter() {
+        let mut builder = Path::builder();
+        //builder.begin(point(10., 10.));
+        //builder.line_to(point(30., 40.));
+        //builder.end(false);
+        //builder.add_circle(point(20., 20.), 5., Winding::Positive);
+        builder.add_circle(point(0., 0.), 10., Winding::Positive);
+        let path = builder.build();
+
+        // Begin { at: (10.0, 10.0) }
+        // Line { from: (10.0, 10.0), to: (30.0, 40.0) }
+        // End { last: (30.0, 40.0), first: (10.0, 10.0), close: false }
+        // Begin { at: (15.0, 20.0) }
+        // Cubic { from: (15.0, 20.0), ctrl1: (15.0, 17.240425), ctrl2: (17.240425, 15.0), to: (20.0, 15.0) }
+        // Cubic { from: (20.0, 15.0), ctrl1: (22.759575, 15.0), ctrl2: (25.0, 17.240425), to: (25.0, 20.0) }
+        // Cubic { from: (25.0, 20.0), ctrl1: (25.0, 22.759575), ctrl2: (22.759575, 25.0), to: (20.0, 25.0) }
+        // Cubic { from: (20.0, 25.0), ctrl1: (17.240425, 25.0), ctrl2: (15.0, 22.759575), to: (15.0, 20.0) }
+        // End { last: (15.0, 20.0), first: (15.0, 20.0), close: true }
+
+        // Begin { at: (-10.0, 0.0) }
+        // Cubic { from: (-10.0, 0.0), ctrl1: (-10.0, -5.5191507), ctrl2: (-5.5191507, -10.0), to: (0.0, -10.0) }
+        // Cubic { from: (0.0, -10.0), ctrl1: (5.5191507, -10.0), ctrl2: (10.0, -5.5191507), to: (10.0, 0.0) }
+        // Cubic { from: (10.0, 0.0), ctrl1: (10.0, 5.5191507), ctrl2: (5.5191507, 10.0), to: (0.0, 10.0) }
+        // Cubic { from: (0.0, 10.0), ctrl1: (-5.5191507, 10.0), ctrl2: (-10.0, 5.5191507), to: (-10.0, 0.0) }
+        // End { last: (-10.0, 0.0), first: (-10.0, 0.0), close: true }
+        path.iter().for_each(|event| {
+            println!("{:?}", event);
+        });
+    }
+
+    #[test]
+    fn test_svg_path_parse() {
+        let svg_path = "M 10 20 L 30 40 L 50 60";
+
+        // Ok(MoveTo { abs: true, x: 10.0, y: 20.0 })
+        // Ok(LineTo { abs: true, x: 30.0, y: 40.0 })
+        // Ok(LineTo { abs: true, x: 50.0, y: 60.0 })
+        PathParser::from(svg_path).for_each(|event| {
+            println!("{:?}", event);
+        });
     }
 }

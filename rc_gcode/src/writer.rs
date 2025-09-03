@@ -10,6 +10,12 @@ pub struct GCodeWriter {
 
     /// 保留几位小数点
     precision: usize,
+
+    /// 当前的X坐标
+    x: f64,
+
+    /// 当前的Y坐标
+    y: f64,
 }
 
 /// 实现Default
@@ -24,6 +30,8 @@ impl GCodeWriter {
         Self {
             lines: vec![],
             precision,
+            x: 0.0,
+            y: 0.0,
         }
     }
 
@@ -51,6 +59,8 @@ impl GCodeWriter {
     }
 
     pub fn move_to(&mut self, x: f64, y: f64) {
+        self.x = x;
+        self.y = y;
         self.write_line(&format!(
             "G0 X{} Y{}",
             self.format_value(x),
@@ -59,10 +69,31 @@ impl GCodeWriter {
     }
 
     pub fn line_to(&mut self, x: f64, y: f64) {
+        self.x = x;
+        self.y = y;
         self.write_line(&format!(
             "G1 X{} Y{}",
             self.format_value(x),
             self.format_value(y),
+        ));
+    }
+
+    /// 顺时针绘制一个圆弧
+    /// - `G2` 顺时针画弧
+    /// - `G3` 逆时针画弧
+    /// - [clockwise] 是否顺时针绘制
+    pub fn arc_to(&mut self, x: f64, y: f64, cx: f64, cy: f64, clockwise: bool) {
+        let i = cx - self.x;
+        let j = cy - self.y;
+        self.x = x;
+        self.y = y;
+        self.write_line(&format!(
+            "{} X{} Y{} I{} J{}",
+            if clockwise { "G2" } else { "G3" },
+            self.format_value(x),
+            self.format_value(y),
+            self.format_value(i),
+            self.format_value(j),
         ));
     }
 }
