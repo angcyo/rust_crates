@@ -191,6 +191,9 @@ pub struct GCodeValueHandlerPathLayer {
 }
 
 impl GCodeValueHandlerPathLayer {
+    pub fn have_z(&self) -> bool {
+        self.z.is_some()
+    }
     pub fn z_f32(&self) -> f32 {
         if let Some(value) = &self.z {
             return value.value_f32();
