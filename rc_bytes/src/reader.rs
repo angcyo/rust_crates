@@ -158,7 +158,7 @@ impl<'a> ByteReader<'a> {
     /// 读取utf8字符串, 直到遇到0字节
     pub fn read_utf8(&mut self) -> String {
         let mut bytes: Vec<u8> = Vec::new();
-        loop {
+        /*loop {
             let byte = self.next();
             match byte {
                 Some(byte) => {
@@ -169,6 +169,12 @@ impl<'a> ByteReader<'a> {
                 }
                 None => break,
             }
+        }*/
+        while let Some(byte) = self.next() {
+            if byte == 0 {
+                break;
+            }
+            bytes.push(byte);
         }
         // utf8 解码
         String::from_utf8(bytes).unwrap()
