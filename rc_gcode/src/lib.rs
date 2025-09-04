@@ -7,6 +7,7 @@ pub mod handler;
 pub mod lines;
 pub mod parser;
 pub mod writer;
+pub mod ydd;
 
 /// 将有多个轮廓的[Path]拆成单轮廓的[Path]
 pub fn split_path_contours(path: &lyon_path::Path) -> Vec<lyon_path::Path> {
