@@ -1,10 +1,53 @@
 use crate::writer::GCodeWriter;
 use lyon_algorithms::aabb::fast_bounding_box;
+use lyon_algorithms::walk::{walk_along_path, RegularPattern, WalkerEvent};
 use lyon_path::iterator::PathIterator;
 
 pub mod handler;
 pub mod parser;
 pub mod writer;
+
+/// 将有多个轮廓的[Path]拆成单轮廓的[Path]
+pub fn split_path_contours(path: &lyon_path::Path) -> Vec<lyon_path::Path> {
+    let mut contours = Vec::new();
+    let mut builder = None;
+
+    for event in path.iter() {
+        match event {
+            lyon_path::Event::Begin { at } => {
+                builder = Some(lyon_path::Path::builder());
+                builder.as_mut().unwrap().begin(at);
+            }
+            lyon_path::Event::Line { from, to } => {
+                if let Some(b) = builder.as_mut() {
+                    b.line_to(to);
+                }
+            }
+            lyon_path::Event::Quadratic { from, ctrl, to } => {
+                if let Some(b) = builder.as_mut() {
+                    b.quadratic_bezier_to(ctrl, to);
+                }
+            }
+            lyon_path::Event::Cubic {
+                from,
+                ctrl1,
+                ctrl2,
+                to,
+            } => {
+                if let Some(b) = builder.as_mut() {
+                    b.cubic_bezier_to(ctrl1, ctrl2, to);
+                }
+            }
+            lyon_path::Event::End { last, first, close } => {
+                if let Some(mut b) = builder.take() {
+                    b.end(close);
+                    contours.push(b.build());
+                }
+            }
+        }
+    }
+    contours
+}
 
 /// 将[Path]转换成GCode
 ///
@@ -34,6 +77,49 @@ pub fn path_to_gcode(
     writer.to_string()
 }
 
+/// 将[Path]沿着路径一段一段转换成GCode
+///
+/// - [interval] 步进, 步长, 每一段的长度
+/// - [tolerance] 公差 0.01
+/// - [precision] GCode小数点位数 6
+pub fn path_walk_along_to_gcode(
+    path: &lyon_path::Path,
+    interval: f32,
+    tolerance: f32,
+    precision: usize,
+    begin: &String,
+) -> String {
+    let mut writer = GCodeWriter::new(precision);
+    if !begin.is_empty() {
+        writer.write_line(begin);
+    }
+
+    //--
+    let path_vec = split_path_contours(path);
+    for path in path_vec.iter() {
+        let start = 0.0;
+        let mut pattern = RegularPattern {
+            callback: &mut |event: WalkerEvent| {
+                if (event.distance == start) {
+                    writer.move_to(event.position.x as f64, event.position.y as f64);
+                } else {
+                    writer.line_to(event.position.x as f64, event.position.y as f64);
+                }
+                true // Return true to continue walking the path.
+            },
+            // Invoke the callback above at a regular interval of 3 units.
+            interval,
+        };
+        walk_along_path(path.iter(), start, tolerance, &mut pattern);
+        //尾部会有interval范围内的长度接不上
+        //let length = approximate_length(path.iter(), tolerance);
+        //walk_along_path(path.iter(), length , tolerance, &mut pattern);
+    }
+
+    //--
+    writer.to_string()
+}
+
 /// 获取路径的边界LTRB
 pub fn path_bounds(path: &lyon_path::Path) -> (f32, f32, f32, f32) {
     let box2d = fast_bounding_box(path);
@@ -50,11 +136,11 @@ mod tests {
     use crate::handler::{GCodeValueHandlerImpl, GCodeValueHandlerPath};
     use crate::parser::GCodeParser;
     use crate::writer::GCodeWriter;
-    use crate::{path_bounds, path_to_gcode};
+    use crate::{path_bounds, path_to_gcode, path_walk_along_to_gcode};
     use lyon_algorithms::aabb::fast_bounding_box;
     use lyon_path::iterator::PathIterator;
     use lyon_path::math::point;
-    use lyon_path::Path;
+    use lyon_path::{Path, Winding};
     use rc_basis::files::read_file_to_string;
     use rc_basis::test::{get_test_file_path, get_test_output_file_path, save_and_open_file};
 
@@ -213,5 +299,24 @@ mod tests {
 
         let bounds = fast_bounding_box(path.iter());
         println!("The bounding box is: {:?}.", bounds);
+    }
+
+    #[test]
+    fn test_path_walk_along_to_gcode() {
+        let mut builder = Path::builder();
+        builder.begin(point(10., 10.));
+        builder.line_to(point(20., 20.));
+        builder.end(false);
+        builder.begin(point(20., 10.));
+        builder.line_to(point(30., 20.));
+        builder.end(false);
+        builder.add_circle(point(30., 10.), 5., Winding::Positive);
+
+        let path = builder.build();
+
+        let gcode = path_walk_along_to_gcode(&path, 0.1, 0.01, 6, &"G90\nG21".to_string());
+        let output = get_test_output_file_path("path_walk_along_to_gcode.gcode");
+        save_and_open_file(&output, gcode.as_bytes());
+        println!("{}", gcode);
     }
 }
