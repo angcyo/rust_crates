@@ -125,6 +125,9 @@ impl<'a> GCodeParser<'a> {
                 }
             }
         }
+        if !value.command.is_empty() {
+            values.push(value);
+        }
         (values, true)
     }
 
