@@ -1,6 +1,6 @@
 [package]
 name = "rc_gcode"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2024"
 authors = ["angcyo@126.com"]
 license = "MIT"
@@ -15,8 +15,10 @@ lyon_path = "1.0.7"
 # https://crates.io/crates/lyon_algorithms
 lyon_algorithms = "1.0.5"
 
-rc_bytes = { path = "../rc_bytes" }
+# https://crates.io/crates/rc_bytes
+rc_bytes = "0.1.1"
 
 # 只在测试时使用的依赖
 [dev-dependencies]
 rc_basis = { path = "../rc_basis" }
+rc_bytes = { path = "../rc_bytes" }
