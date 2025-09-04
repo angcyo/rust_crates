@@ -21,4 +21,4 @@ rc_bytes = "0.1.1"
 # 只在测试时使用的依赖
 [dev-dependencies]
 rc_basis = { path = "../rc_basis" }
-rc_bytes = { path = "../rc_bytes" }
+#rc_bytes = { path = "../rc_bytes" }
