@@ -329,11 +329,17 @@ mod tests {
         builder.begin(point(10., 10.));
         builder.line_to(point(20., 20.));
         builder.end(false);
+
+        builder.begin(point(20., 10.));
+        builder.line_to(point(30., 20.));
+        builder.end(false);
+
         let path = builder.build();
 
-        //let gcode = path_to_gcode(&path, 0.1, 6, &"G90\nG21".to_string());
-        let gcode = path_walk_along_to_gcode(&path, 0.5, 0.01, 6, &"G90\nG21".to_string());
-        let output = get_test_output_file_path("path_walk_along_to_gcode.gcode");
+        let gcode = path_to_gcode(&path, 0.1, 6, &"G90\nG21".to_string());
+        let output = get_test_output_file_path("path_to_gcode2.gcode");
+        // let gcode = path_walk_along_to_gcode(&path, 0.5, 0.01, 6, &"G90\nG21".to_string());
+        //let output = get_test_output_file_path("path_walk_along_to_gcode.gcode");
         save_and_open_file(&output, gcode.as_bytes());
         println!("{}", gcode);
     }
