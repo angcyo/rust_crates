@@ -4,6 +4,7 @@ use lyon_algorithms::walk::{walk_along_path, RegularPattern, WalkerEvent};
 use lyon_path::iterator::PathIterator;
 
 pub mod handler;
+pub mod lines;
 pub mod parser;
 pub mod writer;
 
@@ -50,16 +51,17 @@ pub fn split_path_contours(path: &lyon_path::Path) -> Vec<lyon_path::Path> {
 }
 
 /// 将[Path]转换成GCode
+/// - 支持多轮廓
 ///
 /// - [tolerance] 公差 0.01
-/// - [precision] GCode小数点位数
+/// - [digit] GCode小数点位数
 pub fn path_to_gcode(
     path: &lyon_path::Path,
     tolerance: f32,
-    precision: usize,
+    digit: usize,
     begin: &String,
 ) -> String {
-    let mut writer = GCodeWriter::new(precision);
+    let mut writer = GCodeWriter::new(digit);
     if !begin.is_empty() {
         writer.write_line(begin);
     }
@@ -78,18 +80,19 @@ pub fn path_to_gcode(
 }
 
 /// 将[Path]沿着路径一段一段转换成GCode
+/// - 多轮廓将会先拆分成单轮廓
 ///
 /// - [interval] 步进, 步长, 每一段的长度
 /// - [tolerance] 公差 0.01
-/// - [precision] GCode小数点位数 6
+/// - [digit] GCode小数点位数 6
 pub fn path_walk_along_to_gcode(
     path: &lyon_path::Path,
     interval: f32,
     tolerance: f32,
-    precision: usize,
+    digit: usize,
     begin: &String,
 ) -> String {
-    let mut writer = GCodeWriter::new(precision);
+    let mut writer = GCodeWriter::new(digit);
     if !begin.is_empty() {
         writer.write_line(begin);
     }
@@ -163,7 +166,7 @@ mod tests {
         //let gcode_path = get_test_file_path(".output/path_to_gcode.gcode");
         let gcode_path = get_test_file_path("Toothy_Baby_Croc.gcode");
         let gcode = read_file_to_string(gcode_path.as_str()).unwrap();
-        let mut parser = GCodeParser::new(gcode);
+        let mut parser = GCodeParser::new(&gcode);
         parser.parse(&mut GCodeValueHandlerImpl::default());
     }
 
@@ -172,7 +175,7 @@ mod tests {
         //let gcode_path = get_test_file_path(".output/path_to_gcode.gcode");
         let gcode_path = get_test_file_path("Toothy_Baby_Croc.gcode");
         let gcode = read_file_to_string(gcode_path.as_str()).unwrap();
-        let mut parser = GCodeParser::new(gcode);
+        let mut parser = GCodeParser::new(&gcode);
 
         let mut handler = GCodeValueHandlerPath::default();
         parser.parse(&mut handler);
@@ -315,6 +318,21 @@ mod tests {
         let path = builder.build();
 
         let gcode = path_walk_along_to_gcode(&path, 0.1, 0.01, 6, &"G90\nG21".to_string());
+        let output = get_test_output_file_path("path_walk_along_to_gcode.gcode");
+        save_and_open_file(&output, gcode.as_bytes());
+        println!("{}", gcode);
+    }
+
+    #[test]
+    fn test_path_to_gcode() {
+        let mut builder = Path::builder();
+        builder.begin(point(10., 10.));
+        builder.line_to(point(20., 20.));
+        builder.end(false);
+        let path = builder.build();
+
+        //let gcode = path_to_gcode(&path, 0.1, 6, &"G90\nG21".to_string());
+        let gcode = path_walk_along_to_gcode(&path, 0.5, 0.01, 6, &"G90\nG21".to_string());
         let output = get_test_output_file_path("path_walk_along_to_gcode.gcode");
         save_and_open_file(&output, gcode.as_bytes());
         println!("{}", gcode);

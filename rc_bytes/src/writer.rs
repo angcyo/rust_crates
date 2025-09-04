@@ -5,10 +5,16 @@
 /// 字节写入工具
 pub struct ByteWriter {
     /// 最终数据存放的字节数组
-    bytes: Vec<u8>,
+    pub bytes: Vec<u8>,
     /// 限制允许写入的最大字节数
     /// [usize::MAX]
     max_size: usize,
+}
+
+impl Default for ByteWriter {
+    fn default() -> Self {
+        Self::new(usize::MAX)
+    }
 }
 
 impl ByteWriter {
@@ -20,10 +26,6 @@ impl ByteWriter {
         }
     }
 
-    pub fn bytes(&self) -> &[u8] {
-        self.bytes.as_slice()
-    }
-
     /// 是否允许写入
     fn _can_write(&self) -> bool {
         self.bytes.len() < self.max_size
@@ -33,6 +35,14 @@ impl ByteWriter {
     pub fn write_byte(&mut self, byte: u8) -> bool {
         if self._can_write() {
             self.bytes.push(byte);
+            return true;
+        }
+        false
+    }
+
+    pub fn write_vec(&mut self, bytes: &Vec<u8>) -> bool {
+        if self._can_write() {
+            self.bytes.extend_from_slice(bytes);
             return true;
         }
         false
@@ -51,6 +61,15 @@ impl ByteWriter {
     pub fn write_bytes_iterator<'a>(&mut self, bytes: impl Iterator<Item = u8> + 'a) -> bool {
         if self._can_write() {
             self.bytes.extend(bytes);
+            return true;
+        }
+        false
+    }
+
+    /// 写入ASCII字符串
+    pub fn write_ascii_string(&mut self, string: &str) -> bool {
+        if self._can_write() {
+            self.write_bytes(string.as_bytes());
             return true;
         }
         false

@@ -6,9 +6,9 @@ use std::str::Chars;
 /// @date 2025/09/03
 ///
 /// 解析 GCode 字符串数据
-pub struct GCodeParser {
+pub struct GCodeParser<'a> {
     /// GCode 数据
-    gcode: String,
+    gcode: &'a String,
 }
 
 /// GCode 数值部分
@@ -67,8 +67,8 @@ impl std::fmt::Display for GCodeValue {
     }
 }
 
-impl GCodeParser {
-    pub fn new(gcode: String) -> Self {
+impl<'a> GCodeParser<'a> {
+    pub fn new(gcode: &'a String) -> Self {
         Self { gcode }
     }
 

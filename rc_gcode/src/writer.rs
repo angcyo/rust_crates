@@ -9,7 +9,7 @@ pub struct GCodeWriter {
     lines: Vec<String>,
 
     /// 保留几位小数点
-    precision: usize,
+    digit: usize,
 
     /// 当前的X坐标
     x: f64,
@@ -26,10 +26,10 @@ impl Default for GCodeWriter {
 }
 
 impl GCodeWriter {
-    pub fn new(precision: usize) -> Self {
+    pub fn new(digit: usize) -> Self {
         Self {
             lines: vec![],
-            precision,
+            digit,
             x: 0.0,
             y: 0.0,
         }
@@ -52,7 +52,7 @@ impl GCodeWriter {
     //--
 
     fn format_value(&self, value: f64) -> String {
-        format!("{:.precision$}", value, precision = self.precision)
+        format!("{:.precision$}", value, precision = self.digit)
             .trim_end_matches('0')
             .trim_end_matches('.')
             .to_string()

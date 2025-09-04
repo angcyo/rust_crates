@@ -24,7 +24,19 @@ mod tests {
     use crate::writer::ByteWriter;
 
     #[test]
-    fn it_works() {}
+    fn it_works() {
+        // 在都是正数时, 字节都是一样的
+        let u16 = 12312u16;
+        let i16 = 12312i16;
+
+        let u16le = u16.to_le_bytes();
+        let u16be = u16.to_be_bytes();
+
+        let i16le = i16.to_le_bytes();
+        let i16be = i16.to_be_bytes();
+
+        println!("{:?}", dec_to_hex(u16le[0] as i64, 2));
+    }
 
     #[test]
     fn test_byte_reader() {
@@ -46,7 +58,7 @@ mod tests {
         writer.write_float32(-19.0, false);
         writer.write_float32(-19.0, true);
 
-        let mut reader = ByteReader::new(writer.bytes());
+        let mut reader = ByteReader::new(writer.bytes.as_slice());
         println!("{:?}", reader.read_hex_int(2, false));
         println!("{:?}", reader.read_hex_int(4, false));
         println!("{:?}", reader.read_hex_int(8, true));
@@ -69,7 +81,7 @@ mod tests {
         writer.write_int(100, 4, true);
         writer.write_int(100, 8, true);*/
 
-        println!("{:?}", writer.bytes());
-        println!("bytes:{}", writer.bytes().len());
+        println!("{:?}", writer.bytes.as_slice());
+        println!("bytes:{}", writer.bytes.len());
     }
 }
