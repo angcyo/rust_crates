@@ -1,4 +1,4 @@
-use crate::writer::GCodeWriter;
+use crate::writer::{GCodeWriter, SvgPathWriter};
 use lyon_algorithms::aabb::fast_bounding_box;
 use lyon_algorithms::walk::{walk_along_path, RegularPattern, WalkerEvent};
 use lyon_path::iterator::PathIterator;
@@ -80,6 +80,35 @@ pub fn path_to_gcode(
     writer.to_string()
 }
 
+/// 将[Path]转换成svg path数据
+/// - 支持多轮廓
+///
+/// - [tolerance] 公差 0.01
+/// - [digit] 小数点位数
+pub fn path_to_svg_path(
+    path: &lyon_path::Path,
+    tolerance: f32,
+    digit: usize,
+    begin: &String,
+) -> String {
+    let mut writer = SvgPathWriter::new(digit);
+    if !begin.is_empty() {
+        writer.write_line(begin);
+    }
+    path.iter()
+        .flattened(tolerance)
+        .for_each(|event| match event {
+            lyon_path::Event::Begin { at } => {
+                writer.move_to(at.x as f64, at.y as f64);
+            }
+            lyon_path::Event::Line { from, to } => {
+                writer.line_to(to.x as f64, to.y as f64);
+            }
+            _ => {}
+        });
+    writer.to_string()
+}
+
 /// 将[Path]沿着路径一段一段转换成GCode
 /// - 多轮廓将会先拆分成单轮廓
 ///
@@ -140,7 +169,7 @@ mod tests {
     use crate::handler::{GCodeValueHandlerImpl, GCodeValueHandlerPath};
     use crate::parser::GCodeParser;
     use crate::writer::GCodeWriter;
-    use crate::{path_bounds, path_to_gcode, path_walk_along_to_gcode};
+    use crate::{path_bounds, path_to_gcode, path_to_svg_path, path_walk_along_to_gcode};
     use lyon_algorithms::aabb::fast_bounding_box;
     use lyon_path::iterator::PathIterator;
     use lyon_path::math::point;
@@ -339,6 +368,27 @@ mod tests {
 
         let gcode = path_to_gcode(&path, 0.1, 6, &"G90\nG21".to_string());
         let output = get_test_output_file_path("path_to_gcode2.gcode");
+        // let gcode = path_walk_along_to_gcode(&path, 0.5, 0.01, 6, &"G90\nG21".to_string());
+        //let output = get_test_output_file_path("path_walk_along_to_gcode.gcode");
+        save_and_open_file(&output, gcode.as_bytes());
+        println!("{}", gcode);
+    }
+
+    #[test]
+    fn test_path_to_svg_path() {
+        let mut builder = Path::builder();
+        builder.begin(point(10., 10.));
+        builder.line_to(point(20., 20.));
+        builder.end(false);
+        builder.begin(point(20., 10.));
+        builder.line_to(point(30., 20.));
+        builder.end(false);
+        builder.add_circle(point(30., 10.), 5., Winding::Positive);
+
+        let path = builder.build();
+
+        let gcode = path_to_svg_path(&path, 0.1, 6, &"".to_string());
+        let output = get_test_output_file_path("path_to_svg_path.txt");
         // let gcode = path_walk_along_to_gcode(&path, 0.5, 0.01, 6, &"G90\nG21".to_string());
         //let output = get_test_output_file_path("path_walk_along_to_gcode.gcode");
         save_and_open_file(&output, gcode.as_bytes());
