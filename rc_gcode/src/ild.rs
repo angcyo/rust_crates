@@ -1,6 +1,9 @@
 use crate::split_path_contours;
-use image::{DynamicImage, GenericImageView, Pixel, Rgba};
+use image::codecs::gif::GifDecoder;
+use image::{AnimationDecoder, DynamicImage, GenericImageView, Pixel, Rgba};
 use lyon_algorithms::walk::{walk_along_path, RegularPattern, WalkerEvent};
+use std::fs::File;
+use std::io::BufReader;
 use std::u8;
 
 ///
@@ -178,6 +181,10 @@ pub fn path_to_ild_bytes(
 /// - [frame_index] 当前帧索引, 计数从第 0 帧开始。范围为 0 – 65534。
 /// - [gray_threshold] 灰度阈值, >这个值的像素, 视为白色255, 无数据
 /// - [alpha_threshold] 透明阈值, 透明通道<=这个值的像素, 视为白色255, 无数据
+///
+/// - [image_path_to_ild_bytes]
+/// - [image_to_ild_bytes]
+/// - [gif_path_to_ild_bytes]
 pub fn image_to_ild_bytes(
     img: &DynamicImage,
     offset_x: i16,
@@ -196,6 +203,59 @@ pub fn image_to_ild_bytes(
         gray_threshold,
         alpha_threshold,
     );
+    writer.bytes
+}
+
+/// - [image_path_to_ild_bytes]
+/// - [image_to_ild_bytes]
+/// - [gif_path_to_ild_bytes]
+pub fn image_path_to_ild_bytes(
+    img_path: &String,
+    offset_x: i16,
+    offset_y: i16,
+    gray_threshold: u8,
+    alpha_threshold: u8,
+) -> Vec<u8> {
+    let img = image::open(img_path).expect("打开文件失败!");
+    image_to_ild_bytes(&img, offset_x, offset_y, gray_threshold, alpha_threshold)
+}
+
+/// 将Gif图片转换为ild字节数据
+/// - [image_path_to_ild_bytes]
+/// - [image_to_ild_bytes]
+/// - [gif_path_to_ild_bytes]
+pub fn gif_path_to_ild_bytes(
+    gif_path: &String,
+    offset_x: i16,
+    offset_y: i16,
+    gray_threshold: u8,
+    alpha_threshold: u8,
+) -> Vec<u8> {
+    let gif = File::open(gif_path).expect("打开文件失败");
+    let reader = BufReader::new(gif);
+    let decoder = GifDecoder::new(reader).expect("gif解码失败");
+    let frames = decoder.into_frames();
+    let frames = frames.collect_frames().expect("gif解码失败");
+    let len = frames.len();
+    let mut frame_index = 0;
+
+    let mut writer = IldWriter::default();
+    frames.into_iter().for_each(|frame| {
+        if (frame_index < 1) {
+            write_image_to_ild_bytes(
+                &mut writer,
+                frame.buffer(),
+                len as u16,
+                frame_index,
+                offset_x,
+                offset_y,
+                gray_threshold,
+                alpha_threshold,
+            );
+        }
+        frame_index += 1;
+    });
+
     writer.bytes
 }
 
@@ -245,15 +305,11 @@ pub fn write_image_to_ild_bytes<I>(
 
 #[cfg(test)]
 mod tests {
-    use crate::ild::{path_to_ild_bytes, write_image_to_ild_bytes, IldWriter};
-    use image::codecs::gif::GifDecoder;
-    use image::AnimationDecoder;
+    use crate::ild::{gif_path_to_ild_bytes, path_to_ild_bytes};
     use lyon_path::math::point;
     use lyon_path::Path;
     use rc_basis::files::save_bytes_to_file;
     use rc_basis::test::{get_test_file_path, get_test_output_file_path};
-    use std::fs::File;
-    use std::io::BufReader;
 
     #[test]
     fn test_path_to_ild_bytes() {
@@ -283,49 +339,8 @@ mod tests {
 
     #[test]
     fn test_gif_to_ild_bytes() {
-        let gif = File::open(get_test_file_path("向上走的小人.gif")).unwrap();
-        let reader = BufReader::new(gif);
-        let decoder = GifDecoder::new(reader).unwrap();
-        let frames = decoder.into_frames();
-        let frames = frames.collect_frames().expect("error decoding gif");
-        let len = frames.len();
-        let mut frame_index = 0;
-
-        let mut writer = IldWriter::default();
-        frames.into_iter().for_each(|frame| {
-            if (frame_index < 1) {
-                write_image_to_ild_bytes(
-                    &mut writer,
-                    frame.buffer(),
-                    len as u16,
-                    frame_index,
-                    0,
-                    0,
-                    250,
-                    128,
-                );
-            }
-            //let frame = frame.unwrap();
-            /*println!(
-                "->{:?} {:?} {:?}",
-                frame.left(),
-                frame.top(),
-                frame.buffer().dimensions()
-            );
-            println!("delay->{:?}", frame.delay());
-
-            frame
-                .buffer()
-                .save(get_test_output_file_path(
-                    format!("gif_frame_{}.png", frame_index).as_str(),
-                ))
-                .unwrap();*/
-
-            frame_index += 1;
-        });
-        println!("共:{}帧", len);
-
+        let bytes = gif_path_to_ild_bytes(&get_test_file_path("向上走的小人.gif"), 0, 0, 250, 128);
         let output = get_test_output_file_path("gif_to_ild.ild");
-        save_bytes_to_file(output.as_str(), &writer.bytes).unwrap();
+        save_bytes_to_file(output.as_str(), &bytes).unwrap();
     }
 }
