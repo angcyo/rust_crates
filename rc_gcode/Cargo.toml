@@ -1,6 +1,6 @@
 [package]
 name = "rc_gcode"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2024"
 authors = ["angcyo@126.com"]
 license = "MIT"
@@ -17,6 +17,9 @@ lyon_algorithms = "1.0.5"
 
 # https://crates.io/crates/rc_bytes
 rc_bytes = "0.1.1"
+
+# https://crates.io/crates/image
+image = "0.25.8"
 
 # 只在测试时使用的依赖
 [dev-dependencies]
