@@ -1,0 +1,181 @@
+///
+/// @author <a href="mailto: angcyo@126.com">angcyo</a>
+/// @date 2025/09/09
+///
+/// ild 格式写入工具
+///
+/// https://ilda.com/resources/StandardsDocs/ILDA_IDTF14_rev011.pdf
+///
+pub struct IldWriter {
+    /// 最终的字节数据
+    pub bytes: Vec<u8>,
+}
+
+impl Default for IldWriter {
+    fn default() -> Self {
+        Self { bytes: vec![] }
+    }
+}
+
+impl IldWriter {
+    /// 获取一个字节的状态码
+    /// - [on] 是否开激光
+    pub fn get_status_code(on: bool) -> u8 {
+        0b0_0_0_0_0_0_0_0
+            | if on {
+                0b0_0_0_0_0_0_0_0
+            } else {
+                0b0_1_0_0_0_0_0_0
+            }
+    }
+
+    pub fn write_vec(&mut self, bytes: &Vec<u8>) {
+        self.bytes.extend_from_slice(bytes);
+    }
+
+    pub fn write_ascii_string(&mut self, string: &str) {
+        self.write_bytes(string.as_bytes());
+    }
+
+    /// 写入一个字节数组
+    pub fn write_bytes(&mut self, bytes: &[u8]) {
+        self.bytes.extend_from_slice(bytes);
+    }
+
+    /// 填充指定个字节数, 填充为0
+    pub fn fill_byte(&mut self, count: usize) {
+        for _ in 0..count {
+            self.bytes.push(0);
+        }
+    }
+
+    /// 写入一个字节
+    pub fn write_byte(&mut self, byte: u8) {
+        self.bytes.push(byte);
+    }
+
+    /// 写入一个有符号整数
+    pub fn write_int16(&mut self, value: i16) {
+        let bytes = value.to_be_bytes();
+        self.write_bytes(&bytes);
+    }
+
+    /// 写入头信息
+    /// - [fmt] 数据格式
+    ///     - 格式 0 – 带索引颜色的 3D 坐标
+    ///     - 格式 1 – 带索引颜色的 2D 坐标
+    ///     - 格式 2 – 索引色框的调色板
+    ///     - 格式 3 在 ILDA 技术委员会内提出，但从未获得批准。
+    ///     - 格式 4 – 具有真彩色的 3D 坐标
+    ///     - 格式 5 – 真彩色 2D 坐标
+    /// - [frame_count] 总帧数, 范围为 1 – 65535。对于调色板，此值应为 0。
+    /// - [frame_index] 当前帧索引, 计数从第 0 帧开始。范围为 0 – 65534。
+    /// - [data_count] 当前帧的数据个数 （0 – 65535）
+    pub fn writer_header(&mut self, fmt: u8, frame_count: u16, frame_index: u16, data_count: u16) {
+        self.write_ascii_string("ILDA"); //1~4
+        self.fill_byte(3); //5~7 预留
+        self.write_byte(fmt); //8 数据格式
+        self.write_ascii_string("angcyo.f"); //9~16 框架名
+        self.write_ascii_string("angcyo.c"); //17~24 公司名
+        self.write_bytes(&data_count.to_be_bytes()); //25~26 无符号整数
+        self.write_bytes(&frame_index.to_be_bytes()); //27~28 无符号整数
+        self.write_bytes(&frame_count.to_be_bytes()); //29~30 无符号整数
+        self.write_byte(0); //31 投影仪编号
+        self.write_byte(0); //32 预留
+    }
+
+    /// 写入一个3D索引颜色坐标点
+    pub fn write_point_3d_index_color(&mut self, point: &(i16, i16, i16), color_index: u8) {
+        self.write_bytes(&point.0.to_be_bytes()); //X
+        self.write_bytes(&point.1.to_be_bytes()); //Y
+        self.write_bytes(&point.2.to_be_bytes()); //Z
+        self.write_byte(Self::get_status_code(true)); //状态码
+        self.write_byte(color_index); //颜色索引
+    }
+
+    /// 写入一个2D索引颜色坐标点
+    pub fn write_point_2d_index_color(&mut self, point: &(i16, i16), color_index: u8) {
+        self.write_bytes(&point.0.to_be_bytes()); //X
+        self.write_bytes(&point.1.to_be_bytes()); //Y
+        self.write_byte(Self::get_status_code(true)); //状态码
+        self.write_byte(color_index); //颜色索引
+    }
+
+    /// 写入一个颜色
+    pub fn write_color(&mut self, r: u8, g: u8, b: u8) {
+        self.write_byte(r);
+        self.write_byte(g);
+        self.write_byte(b);
+    }
+
+    pub fn write_bgr(&mut self, r: u8, g: u8, b: u8) {
+        self.write_byte(b);
+        self.write_byte(g);
+        self.write_byte(r);
+    }
+
+    /// 写入一个3D索引真彩坐标点
+    pub fn write_point_3d_index_rgb(&mut self, point: &(i16, i16, i16), r: u8, g: u8, b: u8) {
+        self.write_bytes(&point.0.to_be_bytes()); //X
+        self.write_bytes(&point.1.to_be_bytes()); //Y
+        self.write_bytes(&point.2.to_be_bytes()); //Z
+        self.write_byte(Self::get_status_code(true)); //状态码
+        self.write_bgr(r, g, b);
+    }
+
+    /// 写入一个2D索引真彩坐标点
+    pub fn write_point_2d_index_rgb(&mut self, point: &(i16, i16), r: u8, g: u8, b: u8) {
+        self.write_bytes(&point.0.to_be_bytes()); //X
+        self.write_bytes(&point.1.to_be_bytes()); //Y
+        self.write_byte(Self::get_status_code(true)); //状态码
+        self.write_bgr(r, g, b);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::ild::IldWriter;
+    use lyon_algorithms::walk::{walk_along_path, RegularPattern, WalkerEvent};
+    use lyon_path::math::point;
+    use lyon_path::Path;
+    use rc_basis::files::save_bytes_to_file;
+    use rc_basis::test::get_test_output_file_path;
+
+    #[test]
+    fn test_path_to_ild_bytes() {
+        let mut builder = Path::builder();
+        builder.begin(point(10.0, 10.0));
+        builder.line_to(point(10000.0, 10000.0));
+        builder.end(false);
+        let path = builder.build();
+
+        // 获取路径上的点
+        let mut points = vec![];
+
+        let start = 0.0;
+        let interval = 1.0;
+        let mut pattern = RegularPattern {
+            callback: &mut |event: WalkerEvent| {
+                points.push((event.position.x, event.position.y));
+                true
+            },
+            interval,
+        };
+        walk_along_path(path.iter(), start, 0.1, &mut pattern);
+        
+        let r = 0xff;
+        let g = 0x1F;
+        let b = 0xFF;
+        let mut writer = IldWriter::default();
+        writer.writer_header(5, 1, 0, points.len() as u16);
+        for point in points.iter() {
+            writer.write_point_2d_index_rgb(&(point.0 as i16, point.1 as i16), r, g, b);
+        }
+
+        let output = get_test_output_file_path("path_to_ild.ild");
+        save_bytes_to_file(output.as_str(), &writer.bytes).unwrap();
+    }
+
+    #[test]
+    fn test_image_to_ild_bytes() {}
+}

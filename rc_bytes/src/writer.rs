@@ -31,6 +31,17 @@ impl ByteWriter {
         self.bytes.len() < self.max_size
     }
 
+    /// 填充指定个字节数, 填充为0
+    pub fn fill_byte(&mut self, count: usize) -> bool {
+        if self._can_write() {
+            for _ in 0..count {
+                self.bytes.push(0);
+            }
+            return true;
+        }
+        false
+    }
+
     /// 写入一个字节
     pub fn write_byte(&mut self, byte: u8) -> bool {
         if self._can_write() {
