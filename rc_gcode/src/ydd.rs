@@ -9,10 +9,16 @@ use rc_bytes::writer::ByteWriter;
 /// @date 2025/09/04
 ///
 /// 将[Path]转换成ydd数据
-/// - [le] 是否使用小端序
+/// - [le] 字节序.
+///     - 1: 小端模式
+///     - 其它: 大端模式
+/// - [data_version] 输出数据版本, 默认1
+///     - 0x01 :坐标使用u16类型数据
+///     - 0x02 :坐标使用f32类型数据
 fn path_to_ydd_bytes(
     path: &lyon_path::Path,
     precision: usize,
+    data_version: u8,
     tolerance: f32,
     interval: f32,
     le: bool,
@@ -30,8 +36,13 @@ fn path_to_ydd_bytes(
             //part2
             writer.write_int16(points.len() as i16, le);
             for p in points.iter() {
-                writer.write_int16((p.0 * pe) as i16, le);
-                writer.write_int16((p.1 * pe) as i16, le);
+                if data_version == 2 {
+                    writer.write_float32(p.0, le);
+                    writer.write_float32(p.1, le);
+                } else {
+                    writer.write_int16((p.0 * pe) as i16, le);
+                    writer.write_int16((p.1 * pe) as i16, le);
+                }
             }
         }
     };
@@ -57,18 +68,22 @@ fn path_to_ydd_bytes(
 /// 将GCode转换成ydd数据
 /// - [gcode] gcode文本
 /// - [precision] 数值精度, 默认为100
+/// - [data_version] 输出数据版本, 默认1
+///     - 0x01 :坐标使用u16类型数据
+///     - 0x02 :坐标使用f32类型数据
 /// - [tolerance] 公差, 默认为0.01
 /// - [interval] 是否间隔采样, >0生效
-/// - [le] 是否使用小端序
+/// - [le] 字节序.
+///     - 1: 小端模式
+///     - 其它: 大端模式
 pub fn gcode_to_ydd_bytes(
     gcode: &String,
     precision: usize,
+    data_version: u8,
     tolerance: f32,
     interval: f32,
     le: bool,
 ) -> Vec<u8> {
-    let pe = precision as f32;
-
     let mut parser = GCodeParser::new(gcode);
 
     let mut handler = GCodeValueHandlerPath::default();
@@ -92,17 +107,19 @@ pub fn gcode_to_ydd_bytes(
         max_x = max_x.max(item_bounds.2);
         max_y = max_y.max(item_bounds.3);
 
-        let bytes = path_to_ydd_bytes(path, precision, tolerance, interval, le);
+        let bytes = path_to_ydd_bytes(path, precision, data_version, tolerance, interval, le);
 
         //part1
         let mut item_part1_writer = ByteWriter::default();
         item_part1_writer.write_int16(0x10, le); //数据类型
-        item_part1_writer.write_int16((item_bounds.0 * pe) as i16, le);
-        item_part1_writer.write_int16((item_bounds.1 * pe) as i16, le);
+        //x y
+        item_part1_writer.write_float32(item_bounds.0, le);
+        item_part1_writer.write_float32(item_bounds.1, le);
+        //w h
         let w = item_bounds.2 - item_bounds.0;
-        item_part1_writer.write_int16((w * pe) as i16, le);
+        item_part1_writer.write_float32(w, le);
         let h = item_bounds.3 - item_bounds.1;
-        item_part1_writer.write_int16((h * pe) as i16, le);
+        item_part1_writer.write_float32(h, le);
         //fill-dpi
         item_part1_writer.write_int16(0, le);
 
@@ -114,7 +131,7 @@ pub fn gcode_to_ydd_bytes(
         item_part2_writer.write_int16(60, le); //激光频率
         item_part2_writer.write_int16(20, le); //激光脉宽
         item_part2_writer.write_int16(1, le); //重复次数
-        item_part2_writer.write_int16((z * pe) as i16, le); //支架高度
+        item_part2_writer.write_float32(z, le); //支架高度
 
         //单个元素数据
         let mut item_writer = ByteWriter::default();
@@ -145,12 +162,14 @@ pub fn gcode_to_ydd_bytes(
     let mut result_part2_writer = ByteWriter::default();
     result_part2_writer.write_int16(count, le);
     result_part2_writer.write_int8(0, le);
-    result_part2_writer.write_int16((min_x * pe) as i16, le);
-    result_part2_writer.write_int16((min_y * pe) as i16, le);
+    //x y
+    result_part2_writer.write_float32(min_x, le);
+    result_part2_writer.write_float32(min_y, le);
+    //w h
     let w = max_x - min_x;
-    result_part2_writer.write_int16((w * pe) as i16, le);
+    result_part2_writer.write_float32(w, le);
     let h = max_y - min_y;
-    result_part2_writer.write_int16((h * pe) as i16, le);
+    result_part2_writer.write_float32(h, le);
     result_part2_writer.write_int32(group_writer.bytes.len() as i32, le); //组内数据总字节数
 
     result_writer.write_int8(result_part2_writer.bytes.len() as i8, le);
@@ -170,7 +189,7 @@ mod tests {
     fn test_gcode_to_ydd_bytes() {
         let input = "../rust_crates/tests/.output/path_to_gcode.gcode";
         let gcode = std::fs::read_to_string(&input).unwrap();
-        let bytes = gcode_to_ydd_bytes(&gcode, 100, 0.01, 0.0, true);
+        let bytes = gcode_to_ydd_bytes(&gcode, 100, 1, 0.01, 0.0, true);
         println!("{:?}", bytes);
     }
 }

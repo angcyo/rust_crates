@@ -64,7 +64,9 @@ impl<'a> ByteReader<'a> {
     /// - 支持大小端序
     ///
     /// - [size] 待写入的数值字节数, 1, 2, 4, 8字节
-    /// - [le] 是否使用小端序
+    /// - [le] 字节序.
+    ///     - 1: 小端模式
+    ///     - 其它: 大端模式
     pub fn read_int(&mut self, size: usize, le: bool) -> i64 {
         let bytes = self.read_bytes(size);
         if le {

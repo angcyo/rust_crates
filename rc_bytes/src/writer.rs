@@ -104,7 +104,9 @@ impl ByteWriter {
     ///
     /// - [value] 待写入的数值
     /// - [size] 待写入的数值字节数, 1, 2, 4, 8字节
-    /// - [le] 是否使用小端序
+    /// - [le] 字节序.
+    ///     - 1: 小端模式
+    ///     - 其它: 大端模式
     pub fn write_int(&mut self, value: i64, size: usize, le: bool) -> bool {
         if self._can_write() {
             //let bytes = value.to_be_bytes();
