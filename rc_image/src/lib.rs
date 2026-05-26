@@ -39,6 +39,28 @@ mod tests {
             .unwrap();
     }
 
+    /// 原图尺寸: 1280 * 960
+    ///
+    /// 缩小2倍耗时统计(CPU:Apple M3 Max): 640 * 480
+    /// [Nearest]耗时: 130ms
+    /// [Triangle]耗时: 319ms
+    /// [CatmullRom]耗时: 543ms
+    /// [Gaussian]耗时: 758ms
+    /// [Lanczos3]耗时: 785ms
+    ///
+    /// 放大2倍耗时统计(CPU:Apple M3 Max): 2560 * 1920
+    /// [Nearest]耗时: 1142ms
+    /// [Triangle]耗时: 1995ms
+    /// [CatmullRom]耗时: 2893ms
+    /// [Gaussian]耗时: 3718ms
+    /// [Lanczos3]耗时: 3715ms
+    ///
+    /// 放大10倍耗时统计(CPU:Apple M3 Max): 12800 * 9600
+    /// [Nearest]耗时: 27867ms
+    /// [Triangle]耗时: 43580ms
+    /// [CatmullRom]耗时: 55367ms
+    /// [Gaussian]耗时: 68284ms
+    /// [Lanczos3]耗时: 68687ms
     #[test]
     fn test_image_resize() {
         rc_basis::ptl_current_dir!();
@@ -72,6 +94,33 @@ mod tests {
             /*crate::write::write_image_file(&image, "../tests/.output/test_lanczos3.png", None)
             .unwrap();*/
         });
+    }
+
+    /// 调整图片大小
+    #[test]
+    fn resize_image() {
+        rc_basis::ptl_current_dir!();
+        //文件夹, 列出文件夹下的所有图片文件
+        let folder = "E:/易雕科技/KopLaser";
+        // 输出目录
+        let output_folder = "E:/易雕科技/KopLaser/.output";
+        let new_width = 1170;
+        let new_height = 2532;
+        for entry in std::fs::read_dir(folder).unwrap() {
+            let entry = entry.unwrap();
+            let path = entry.path();
+            if path.is_file() {
+                let image = crate::read::read_image_file(path.to_str().unwrap()).unwrap();
+                let new_image =
+                    image.resize(new_width, new_height, image::imageops::FilterType::Lanczos3);
+                //output_folder 创建一个路径, 并保证存在
+                let output_path =
+                    std::path::PathBuf::from(output_folder).join(path.file_name().unwrap());
+                rc_basis::files::ensure_parent_dir_exist(output_path.to_str().unwrap());
+                crate::write::write_image_file(&new_image, output_path.to_str().unwrap(), None)
+                    .unwrap();
+            }
+        }
     }
 
     /// 测试图片变换矩阵
