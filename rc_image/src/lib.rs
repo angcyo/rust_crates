@@ -103,9 +103,11 @@ mod tests {
         //文件夹, 列出文件夹下的所有图片文件
         let folder = "E:/易雕科技/KopLaser";
         // 输出目录
-        let output_folder = "E:/易雕科技/KopLaser/.output";
-        let new_width = 1170;
-        let new_height = 2532;
+        /*let new_width = 1170;
+        let new_height = 2532;*/
+        let new_width = 1242;
+        let new_height = 2688;
+        let output_folder = format!("E:/易雕科技/KopLaser/.output_{}_{}", new_width, new_height);
         for entry in std::fs::read_dir(folder).unwrap() {
             let entry = entry.unwrap();
             let path = entry.path();
@@ -115,7 +117,7 @@ mod tests {
                     image.resize(new_width, new_height, image::imageops::FilterType::Lanczos3);
                 //output_folder 创建一个路径, 并保证存在
                 let output_path =
-                    std::path::PathBuf::from(output_folder).join(path.file_name().unwrap());
+                    std::path::PathBuf::from(&output_folder).join(path.file_name().unwrap());
                 rc_basis::files::ensure_parent_dir_exist(output_path.to_str().unwrap());
                 crate::write::write_image_file(&new_image, output_path.to_str().unwrap(), None)
                     .unwrap();
