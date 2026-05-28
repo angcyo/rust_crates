@@ -98,7 +98,7 @@ mod tests {
 
     /// 调整图片大小
     #[test]
-    fn resize_image() {
+    fn resize_image_folder() {
         rc_basis::ptl_current_dir!();
         //文件夹, 列出文件夹下的所有图片文件
         let folder = "E:/易雕科技/KopLaser";
@@ -123,6 +123,16 @@ mod tests {
                     .unwrap();
             }
         }
+    }
+    #[test]
+    fn resize_image_file() {
+        let path = "E:/易雕科技/KopLaser/logo.png";
+        let new_width = 512;
+        let new_height = 512;
+        let output_path = format!("{}_{}_{}.png", path, new_width, new_height);
+        let image = crate::read::read_image_file(path).unwrap();
+        let new_image = image.resize(new_width, new_height, image::imageops::FilterType::Lanczos3);
+        crate::write::write_image_file(&new_image, &output_path, None).unwrap();
     }
 
     /// 测试图片变换矩阵
