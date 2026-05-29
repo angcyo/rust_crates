@@ -9,7 +9,7 @@ use std::io::{BufRead, Read, Write};
 pub fn ensure_dir_exist(file_path: &str) {
     let dir = std::path::Path::new(file_path);
     if !dir.exists() {
-        std::fs::create_dir_all(dir).unwrap();
+        let _ = std::fs::create_dir_all(dir);
     }
 }
 
